@@ -6,6 +6,10 @@ Upload a PDF (up to 10 MB) and get a 3-5 sentence summary plus structured JSON
 - **Frontend:** React + Vite + strict TypeScript, deployed to GitHub Pages by GitHub Actions.
 - **Backend:** FastAPI proxy (`main.py`) that holds the Gemini API key. The browser never sees it.
 
+The UI is in Polish on purpose: the supported document types (`umowa`, `faktura`, `oferta`,
+`raport`, `inne`) target Polish business documents. The summary is written in the language of
+the uploaded document.
+
 ## How it works
 
 1. The browser sends the PDF to `POST /api/analyze`.
@@ -23,6 +27,8 @@ Upload a PDF (up to 10 MB) and get a 3-5 sentence summary plus structured JSON
 - Prompt injection: the document is wrapped in a random boundary marker, the system instruction
   declares it untrusted data, the file name is never put in the prompt, and the output is
   schema-validated.
+- Per-IP rate limit (`RATE_LIMIT_REQUESTS` per `RATE_LIMIT_WINDOW_S`, in memory), because CORS only
+  restricts browsers, not scripts.
 - Upstream errors are logged server-side and never returned to the client.
 
 ## Run locally
@@ -47,4 +53,5 @@ Checks: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run bu
 
 - Frontend: push to `main`; `.github/workflows/deploy.yml` lints, builds and publishes to Pages.
 - Backend: any Python host (the demo uses Render). Set `GEMINI_API_KEY` and `ALLOWED_ORIGIN`
-  as environment variables there. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+  as environment variables there (optional: `GEMINI_MODELS`, `RATE_LIMIT_REQUESTS`,
+  `RATE_LIMIT_WINDOW_S`). Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`.
