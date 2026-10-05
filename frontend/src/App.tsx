@@ -75,7 +75,7 @@ export default function App() {
     formData.append('file', file);
 
     try {
-      const response = await fetch(`${API_URL}/api/analyze`, {
+      const response = await fetch('https://pdf-insight-7num.onrender.com/api/analyze', {
         method: 'POST',
         body: formData,
       });
