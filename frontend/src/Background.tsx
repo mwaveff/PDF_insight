@@ -13,7 +13,7 @@ export default function Background() {
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
 
-    // Змінні для позиції миші
+    // Mouse position state
     let mouseX = w / 2;
     let mouseY = h / 2;
 
@@ -30,7 +30,7 @@ export default function Background() {
     };
     window.addEventListener('mousemove', onMouseMove);
 
-    // Динамічна кількість частинок залежно від розміру екрана
+    // Particle count scales with screen size
     const particleCount = Math.min(Math.floor((w * h) / 12000), 120);
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * w,
@@ -46,11 +46,11 @@ export default function Background() {
       t += 0.002;
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Глибокий темний фон
+      // 1. Deep dark background
       ctx.fillStyle = '#03040b';
       ctx.fillRect(0, 0, w, h);
 
-      // 2. М'яке фонове світіння (повільно обертається)
+      // 2. Soft background glow (slowly rotating)
       const cx1 = w * 0.5 + Math.sin(t) * w * 0.25;
       const cy1 = h * 0.5 + Math.cos(t * 1.2) * h * 0.25;
       const g1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, w * 0.55);
@@ -67,42 +67,42 @@ export default function Background() {
       ctx.fillStyle = g2;
       ctx.fillRect(0, 0, w, h);
 
-      // 3. Анімація частинок (Нейронна мережа)
+      // 3. Particle animation (neural network)
       ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
 
-        // Відбивання від країв екрана
+        // Bounce off the screen edges
         if (p.x < 0 || p.x > w) p.vx *= -1;
         if (p.y < 0 || p.y > h) p.vy *= -1;
 
-        // Взаємодія з курсором миші
+        // Mouse cursor interaction
         const dxMouse = mouseX - p.x;
         const dyMouse = mouseY - p.y;
         const distMouse = Math.hypot(dxMouse, dyMouse);
 
         if (distMouse < 180) {
-          // Малюємо лінію до миші
+          // Draw a line to the mouse
           ctx.beginPath();
           ctx.strokeStyle = `rgba(129, 140, 248, ${0.4 * (1 - distMouse / 180)})`;
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(mouseX, mouseY);
           ctx.stroke();
 
-          // Легке відштовхування частинок від курсора (ефект магнітного поля)
+          // Gently push particles away from the cursor (magnetic field effect)
           p.x -= dxMouse * 0.015;
           p.y -= dyMouse * 0.015;
         }
 
-        // Малюємо саму частинку (вузол)
+        // Draw the particle (node)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(199, 210, 254, 0.8)';
         ctx.fill();
 
-        // З'єднуємо частинки між собою
+        // Connect nearby particles
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dx = p.x - p2.x;
