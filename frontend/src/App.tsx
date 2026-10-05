@@ -23,11 +23,11 @@ import {
 import { analyzePdf, validatePdf } from './api';
 import type { InsightData } from './types/schema';
 import Background from './Background';
+
 const LOADING_STEPS = [
-  'Weryfikacja struktury pliku PDF...',
-  'Ekstrakcja warstwy tekstowej i metadanych...',
-  'Analiza semantyczna i wykrywanie encji...',
-  'Walidacja schematu JSON...',
+  'Przesyłanie pliku PDF...',
+  'Analiza dokumentu...',
+  'Analiza trwa dłużej niż zwykle — serwer mógł się właśnie uruchamiać...',
 ];
 
 export default function App() {
@@ -35,6 +35,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [canRetry, setCanRetry] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -44,7 +45,7 @@ export default function App() {
     if (!loading) return;
     const interval = setInterval(() => {
       setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
-    }, 2500);
+    }, 6000);
     return () => clearInterval(interval);
   }, [loading]);
 
@@ -52,9 +53,11 @@ export default function App() {
     const validationError = validatePdf(selectedFile);
     if (validationError) {
       setError(validationError);
+      setCanRetry(false);
       return;
     }
     setError(null);
+    setCanRetry(false);
     setFile(selectedFile);
     setData(null);
   };
@@ -64,6 +67,7 @@ export default function App() {
     setLoading(true);
     setLoadingStep(0);
     setError(null);
+    setCanRetry(false);
 
     try {
       setData(await analyzePdf(file));
@@ -74,6 +78,7 @@ export default function App() {
         colors: ['#6366f1', '#a855f7', '#38bdf8'],
       });
     } catch (err) {
+      setCanRetry(true);
       setError(
         err instanceof Error && err.message ? err.message : 'Wystąpił błąd podczas analizy.',
       );
@@ -103,10 +108,10 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen text-slate-100 font-sans selection:bg-indigo-500 selection:text-white pb-24 overflow-x-hidden">
-      {/* Живой анимированный Canvas-фон */}
+      {/* Animated canvas background */}
       <Background />
 
-      {/* Обязательно relative z-10, чтобы контент был поверх фона */}
+      {/* relative z-10 keeps the content above the background */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 space-y-10">
         {/* Header */}
         <motion.header
@@ -241,12 +246,15 @@ export default function App() {
                 <p className="font-semibold text-red-300">Wystąpił błąd</p>
                 <p className="text-red-400/90 text-xs mt-0.5">{error}</p>
               </div>
-              <button
-                onClick={handleAnalyze}
-                className="flex items-center gap-1 text-xs text-red-300 hover:text-white underline pt-0.5"
-              >
-                <RefreshCw className="w-3.5 h-3.5" /> Ponów
-              </button>
+              {canRetry && file && (
+                <button
+                  onClick={handleAnalyze}
+                  disabled={loading}
+                  className="flex items-center gap-1 text-xs text-red-300 hover:text-white underline pt-0.5 disabled:opacity-50"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Ponów
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -275,7 +283,7 @@ export default function App() {
             <div>
               <p className="text-sm font-semibold text-slate-200">{LOADING_STEPS[loadingStep]}</p>
               <p className="text-xs text-slate-500 mt-1">
-                Średni czas oczekiwania: poniżej 30 sekund
+                Pierwsze zapytanie może potrwać do minuty (uruchomienie serwera)
               </p>
             </div>
           </motion.div>
