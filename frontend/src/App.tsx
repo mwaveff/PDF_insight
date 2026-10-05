@@ -20,7 +20,8 @@ import {
   Eye,
   Code2
 } from 'lucide-react';
-import { InsightSchema, type InsightData } from './types/schema';
+import { analyzePdf, validatePdf } from './api';
+import type { InsightData } from './types/schema';
 import Background from './Background';
 const LOADING_STEPS = [
   "Weryfikacja struktury pliku PDF...",
@@ -40,23 +41,18 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'visual' | 'json'>('visual');
 
   useEffect(() => {
-    let interval: any;
-    if (loading) {
-      setLoadingStep(0);
-      interval = setInterval(() => {
-        setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
-      }, 2500);
-    }
+    if (!loading) return;
+    setLoadingStep(0);
+    const interval = setInterval(() => {
+      setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
+    }, 2500);
     return () => clearInterval(interval);
   }, [loading]);
 
   const handleFile = (selectedFile: File) => {
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.endsWith('.pdf')) {
-      setError('Dozwolone są wyłącznie pliki PDF.');
-      return;
-    }
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      setError('Maksymalny rozmiar pliku wynosi 10 MB.');
+    const validationError = validatePdf(selectedFile);
+    if (validationError) {
+      setError(validationError);
       return;
     }
     setError(null);
@@ -69,31 +65,16 @@ export default function App() {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await fetch('https://pdf-insight-7num.onrender.com/api/analyze', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.detail || `Błąd serwera (${response.status})`);
-      }
-
-      const rawJson = await response.json();
-      const validated = InsightSchema.parse(rawJson);
-      setData(validated);
+      setData(await analyzePdf(file));
       confetti({
         particleCount: 60,
         spread: 60,
         origin: { y: 0.8 },
         colors: ['#6366f1', '#a855f7', '#38bdf8']
       });
-    } catch (err: any) {
-      setError(err.message || 'Wystąpił błąd podczas analizy.');
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : 'Wystąpił błąd podczas analizy.');
     } finally {
       setLoading(false);
     }
@@ -101,9 +82,10 @@ export default function App() {
 
   const copyJson = () => {
     if (!data) return;
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    void navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   const downloadJson = () => {
@@ -112,7 +94,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${data.document.fileName.replace('.pdf', '')}_insight.json`;
+    a.download = `${data.document.fileName.replace(/\.pdf$/i, '')}_insight.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -172,7 +154,7 @@ export default function App() {
 
           <input
             type="file"
-            accept=".pdf"
+            accept=".pdf,application/pdf"
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
           />
@@ -254,6 +236,15 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Empty State */}
+        {!file && !data && !loading && !error && (
+          <div className="text-center text-sm text-slate-500 py-6" data-testid="empty-state">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-slate-600" />
+            <p className="font-medium text-slate-400">Brak wyników</p>
+            <p className="text-xs mt-1">Prześlij dokument PDF, aby zobaczyć podsumowanie i dane w formacie JSON.</p>
+          </div>
+        )}
 
         {/* Loading Progress State */}
         {loading && (

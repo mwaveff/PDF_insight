@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+const isoDate = z.iso.date();
+const isoCurrency = z.string().regex(/^[A-Z]{3}$/, 'Expected an ISO 4217 currency code');
+
 export const InsightSchema = z.object({
   type: z.enum(['umowa', 'faktura', 'oferta', 'raport', 'inne']),
   document: z.object({
@@ -7,7 +10,7 @@ export const InsightSchema = z.object({
     pages: z.number().int().positive(),
     language: z.string(),
     title: z.string(),
-    date: z.string().nullable(),
+    date: isoDate.nullable(),
   }),
   summary: z.string(),
   keyPoints: z.array(z.string()),
@@ -18,15 +21,15 @@ export const InsightSchema = z.object({
   amounts: z.array(
     z.object({
       value: z.number(),
-      currency: z.string(),
+      currency: isoCurrency,
       context: z.string(),
-    })
+    }),
   ),
   dates: z.array(
     z.object({
-      date: z.string(),
+      date: isoDate,
       context: z.string(),
-    })
+    }),
   ),
   keywords: z.array(z.string()),
 });
