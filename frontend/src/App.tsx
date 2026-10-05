@@ -39,7 +39,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'visual' | 'json'>('visual');
 
-  const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+  const API_URL = (import.meta as any).env?.VITE_API_URL || 'https://pdf-insight-7num.onrender.com](https://pdf-insight-7num.onrender.com';
 
   useEffect(() => {
     let interval: any;
