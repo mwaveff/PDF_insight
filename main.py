@@ -3,7 +3,9 @@ import logging
 import os
 import re
 import secrets
+import threading
 import time
+from collections import defaultdict, deque
 from datetime import date
 from typing import Literal
 
@@ -11,9 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from pydantic import BaseModel, Field, ValidationError, field_validator
 from pypdf import PdfReader
@@ -27,7 +30,13 @@ MIN_TEXT_CHARS = 20
 
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://mwaveff.github.io")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-CANDIDATE_MODELS = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-3.8-pro", "gemini-2.5-pro"]
+CANDIDATE_MODELS = [
+    m.strip()
+    for m in os.getenv("GEMINI_MODELS", "gemini-2.5-flash,gemini-2.5-pro").split(",")
+    if m.strip()
+]
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "10"))
+RATE_LIMIT_WINDOW_S = int(os.getenv("RATE_LIMIT_WINDOW_S", "600"))
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -39,6 +48,35 @@ app.add_middleware(
 )
 
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+
+_hits: dict[str, deque[float]] = defaultdict(deque)
+_hits_lock = threading.Lock()
+
+
+def client_ip(request: Request) -> str:
+    # Behind a proxy the rightmost X-Forwarded-For entry is the one the proxy added;
+    # earlier entries can be forged by the caller.
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def check_rate_limit(ip: str) -> None:
+    """Sliding-window limit per IP. CORS does not stop non-browser clients, this does."""
+    now = time.monotonic()
+    with _hits_lock:
+        window = _hits[ip]
+        while window and now - window[0] > RATE_LIMIT_WINDOW_S:
+            window.popleft()
+        if len(window) >= RATE_LIMIT_REQUESTS:
+            raise HTTPException(
+                status_code=429, detail="Zbyt wiele żądań. Spróbuj ponownie za kilka minut."
+            )
+        window.append(now)
+        if len(_hits) > 10_000:
+            for key in [k for k, v in _hits.items() if not v or now - v[-1] > RATE_LIMIT_WINDOW_S]:
+                del _hits[key]
 
 
 class Entities(BaseModel):
@@ -182,10 +220,15 @@ def analyze_text(text: str) -> ModelOutput:
                 return ModelOutput.model_validate_json(response.text or "")
             except ValidationError as e:
                 last_error = e
-            except Exception as e:  # noqa: BLE001 - SDK raises many error types
+            except genai_errors.APIError as e:
                 last_error = e
-                if "404" in str(e):
+                if e.code == 404:
                     break  # model unavailable: go to the next one
+                if e.code not in (429, 500, 502, 503, 504):
+                    break  # auth/bad request: retrying will not help
+                time.sleep(1.5)
+            except Exception as e:  # noqa: BLE001 - network and other SDK errors
+                last_error = e
                 time.sleep(1.5)
 
     logger.error("Analysis failed: %s", last_error)
@@ -193,9 +236,11 @@ def analyze_text(text: str) -> ModelOutput:
 
 
 @app.post("/api/analyze", response_model=InsightResponse)
-def analyze_pdf(file: UploadFile = File(...)) -> InsightResponse:
+def analyze_pdf(request: Request, file: UploadFile = File(...)) -> InsightResponse:
     if client is None:
         raise HTTPException(status_code=500, detail="Serwer nie jest poprawnie skonfigurowany.")
+
+    check_rate_limit(client_ip(request))
 
     name = os.path.basename(file.filename or "document.pdf")
     if not name.lower().endswith(".pdf"):
