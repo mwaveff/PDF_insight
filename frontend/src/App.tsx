@@ -18,16 +18,16 @@ import {
   ArrowRight,
   RefreshCw,
   Eye,
-  Code2
+  Code2,
 } from 'lucide-react';
 import { analyzePdf, validatePdf } from './api';
 import type { InsightData } from './types/schema';
 import Background from './Background';
 const LOADING_STEPS = [
-  "Weryfikacja struktury pliku PDF...",
-  "Ekstrakcja warstwy tekstowej i metadanych...",
-  "Analiza semantyczna i wykrywanie encji...",
-  "Walidacja schematu JSON..."
+  'Weryfikacja struktury pliku PDF...',
+  'Ekstrakcja warstwy tekstowej i metadanych...',
+  'Analiza semantyczna i wykrywanie encji...',
+  'Walidacja schematu JSON...',
 ];
 
 export default function App() {
@@ -42,7 +42,6 @@ export default function App() {
 
   useEffect(() => {
     if (!loading) return;
-    setLoadingStep(0);
     const interval = setInterval(() => {
       setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
     }, 2500);
@@ -63,6 +62,7 @@ export default function App() {
   const handleAnalyze = async () => {
     if (!file) return;
     setLoading(true);
+    setLoadingStep(0);
     setError(null);
 
     try {
@@ -71,10 +71,12 @@ export default function App() {
         particleCount: 60,
         spread: 60,
         origin: { y: 0.8 },
-        colors: ['#6366f1', '#a855f7', '#38bdf8']
+        colors: ['#6366f1', '#a855f7', '#38bdf8'],
       });
     } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : 'Wystąpił błąd podczas analizy.');
+      setError(
+        err instanceof Error && err.message ? err.message : 'Wystąpił błąd podczas analizy.',
+      );
     } finally {
       setLoading(false);
     }
@@ -101,13 +103,11 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen text-slate-100 font-sans selection:bg-indigo-500 selection:text-white pb-24 overflow-x-hidden">
-
       {/* Живой анимированный Canvas-фон */}
       <Background />
 
       {/* Обязательно relative z-10, чтобы контент был поверх фона */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 space-y-10">
-
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -15 }}
@@ -122,12 +122,16 @@ export default function App() {
 
           <div>
             <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight">
-              PDF <span className="bg-gradient-to-r from-indigo-400 via-sky-300 to-indigo-200 bg-clip-text text-transparent">Insight</span>
+              PDF{' '}
+              <span className="bg-gradient-to-r from-indigo-400 via-sky-300 to-indigo-200 bg-clip-text text-transparent">
+                Insight
+              </span>
             </h1>
           </div>
 
           <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed font-normal">
-            Błyskawiczna analiza, podsumowanie oraz automatyczna ekstrakcja kluczowych danych z dokumentów w czasie rzeczywistym.
+            Błyskawiczna analiza, podsumowanie oraz automatyczna ekstrakcja kluczowych danych z
+            dokumentów w czasie rzeczywistym.
           </p>
         </motion.header>
 
@@ -136,7 +140,10 @@ export default function App() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOver(true);
+          }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={(e) => {
             e.preventDefault();
@@ -144,8 +151,8 @@ export default function App() {
             if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
           }}
           className={`relative group rounded-3xl border transition-all duration-300 p-10 sm:p-14 text-center cursor-pointer overflow-hidden backdrop-blur-xl ${
-            isDragOver 
-              ? 'border-indigo-500/80 bg-indigo-950/30 shadow-[0_0_40px_rgba(99,102,241,0.25)] scale-[1.01]' 
+            isDragOver
+              ? 'border-indigo-500/80 bg-indigo-950/30 shadow-[0_0_40px_rgba(99,102,241,0.25)] scale-[1.01]'
               : 'border-slate-800/80 bg-slate-900/40 hover:border-indigo-500/40 hover:bg-slate-900/60 shadow-[0_8px_32px_rgba(0,0,0,0.36)]'
           }`}
         >
@@ -164,7 +171,10 @@ export default function App() {
           </div>
 
           <h3 className="relative z-10 text-slate-100 font-semibold text-lg sm:text-xl">
-            Upuść plik PDF tutaj lub <span className="text-indigo-400 underline decoration-indigo-500/40 underline-offset-4 group-hover:text-indigo-300">wybierz z dysku</span>
+            Upuść plik PDF tutaj lub{' '}
+            <span className="text-indigo-400 underline decoration-indigo-500/40 underline-offset-4 group-hover:text-indigo-300">
+              wybierz z dysku
+            </span>
           </h3>
           <p className="relative z-10 text-xs text-slate-500 mt-2">
             Maksymalny rozmiar pliku: 10 MB (obsługiwany format: PDF)
@@ -185,8 +195,12 @@ export default function App() {
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="truncate">
-                  <p className="text-sm font-semibold text-slate-200 truncate max-w-xs sm:max-w-md">{file.name}</p>
-                  <p className="text-xs text-slate-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                  <p className="text-sm font-semibold text-slate-200 truncate max-w-xs sm:max-w-md">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
                 </div>
               </div>
 
@@ -242,7 +256,9 @@ export default function App() {
           <div className="text-center text-sm text-slate-500 py-6" data-testid="empty-state">
             <FileText className="w-8 h-8 mx-auto mb-2 text-slate-600" />
             <p className="font-medium text-slate-400">Brak wyników</p>
-            <p className="text-xs mt-1">Prześlij dokument PDF, aby zobaczyć podsumowanie i dane w formacie JSON.</p>
+            <p className="text-xs mt-1">
+              Prześlij dokument PDF, aby zobaczyć podsumowanie i dane w formacie JSON.
+            </p>
           </div>
         )}
 
@@ -257,9 +273,7 @@ export default function App() {
               <div className="w-12 h-12 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-200">
-                {LOADING_STEPS[loadingStep]}
-              </p>
+              <p className="text-sm font-semibold text-slate-200">{LOADING_STEPS[loadingStep]}</p>
               <p className="text-xs text-slate-500 mt-1">
                 Średni czas oczekiwania: poniżej 30 sekund
               </p>
@@ -278,7 +292,6 @@ export default function App() {
             >
               {/* Result Container */}
               <div className="rounded-3xl bg-slate-900/40 border border-slate-800/90 shadow-2xl backdrop-blur-md overflow-hidden">
-
                 {/* Panel Header & Navigation */}
                 <div className="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="space-y-1">
@@ -287,13 +300,16 @@ export default function App() {
                         {data.type}
                       </span>
                       <span className="text-xs text-slate-400">
-                        {data.document.pages} {data.document.pages === 1 ? 'strona' : 'stron'} • {data.document.language.toUpperCase()}
+                        {data.document.pages} {data.document.pages === 1 ? 'strona' : 'stron'} •{' '}
+                        {data.document.language.toUpperCase()}
                       </span>
                       {data.document.date && (
                         <span className="text-xs text-slate-400">• {data.document.date}</span>
                       )}
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white pt-1">{data.document.title}</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white pt-1">
+                      {data.document.title}
+                    </h2>
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -302,7 +318,9 @@ export default function App() {
                       <button
                         onClick={() => setActiveTab('visual')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                          activeTab === 'visual' ? 'bg-indigo-600 text-white font-medium shadow' : 'text-slate-400 hover:text-slate-200'
+                          activeTab === 'visual'
+                            ? 'bg-indigo-600 text-white font-medium shadow'
+                            : 'text-slate-400 hover:text-slate-200'
                         }`}
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -311,7 +329,9 @@ export default function App() {
                       <button
                         onClick={() => setActiveTab('json')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                          activeTab === 'json' ? 'bg-indigo-600 text-white font-medium shadow' : 'text-slate-400 hover:text-slate-200'
+                          activeTab === 'json'
+                            ? 'bg-indigo-600 text-white font-medium shadow'
+                            : 'text-slate-400 hover:text-slate-200'
                         }`}
                       >
                         <Code2 className="w-3.5 h-3.5" />
@@ -349,7 +369,10 @@ export default function App() {
                       </h4>
                       <div className="grid grid-cols-1 gap-2">
                         {data.keyPoints.map((point, idx) => (
-                          <div key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 bg-slate-950/40 p-3.5 rounded-xl border border-slate-850">
+                          <div
+                            key={idx}
+                            className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 bg-slate-950/40 p-3.5 rounded-xl border border-slate-850"
+                          >
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
                             <span>{point}</span>
                           </div>
@@ -359,7 +382,6 @@ export default function App() {
 
                     {/* Entities & Amounts Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                       {/* Podmioty i osoby */}
                       <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-850 space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -368,12 +390,17 @@ export default function App() {
                         <div className="flex flex-wrap gap-1.5">
                           {data.entities.organizations.length > 0 ? (
                             data.entities.organizations.map((org, i) => (
-                              <span key={i} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200">
+                              <span
+                                key={i}
+                                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200"
+                              >
                                 {org}
                               </span>
                             ))
                           ) : (
-                            <span className="text-xs text-slate-600 italic">Brak zidentyfikowanych podmiotów</span>
+                            <span className="text-xs text-slate-600 italic">
+                              Brak zidentyfikowanych podmiotów
+                            </span>
                           )}
                         </div>
 
@@ -383,7 +410,10 @@ export default function App() {
                         <div className="flex flex-wrap gap-1.5">
                           {data.entities.people.length > 0 ? (
                             data.entities.people.map((person, i) => (
-                              <span key={i} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200">
+                              <span
+                                key={i}
+                                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200"
+                              >
                                 {person}
                               </span>
                             ))
@@ -401,7 +431,10 @@ export default function App() {
                         <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                           {data.amounts.length > 0 ? (
                             data.amounts.map((amt, i) => (
-                              <div key={i} className="flex justify-between items-center text-xs p-2 rounded-lg bg-slate-900/60 border border-slate-800/60">
+                              <div
+                                key={i}
+                                className="flex justify-between items-center text-xs p-2 rounded-lg bg-slate-900/60 border border-slate-800/60"
+                              >
                                 <span className="text-slate-400 truncate pr-2">{amt.context}</span>
                                 <span className="font-semibold text-emerald-400 shrink-0">
                                   {amt.value.toLocaleString()} {amt.currency}
@@ -419,9 +452,14 @@ export default function App() {
                         <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                           {data.dates.length > 0 ? (
                             data.dates.map((dt, i) => (
-                              <div key={i} className="flex justify-between items-center text-xs p-2 rounded-lg bg-slate-900/60 border border-slate-800/60">
+                              <div
+                                key={i}
+                                className="flex justify-between items-center text-xs p-2 rounded-lg bg-slate-900/60 border border-slate-800/60"
+                              >
                                 <span className="text-slate-400 truncate pr-2">{dt.context}</span>
-                                <span className="font-semibold text-slate-200 shrink-0">{dt.date}</span>
+                                <span className="font-semibold text-slate-200 shrink-0">
+                                  {dt.date}
+                                </span>
                               </div>
                             ))
                           ) : (
@@ -429,15 +467,19 @@ export default function App() {
                           )}
                         </div>
                       </div>
-
                     </div>
 
                     {/* Keywords */}
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Słowa kluczowe</h4>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                        Słowa kluczowe
+                      </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {data.keywords.map((kw, i) => (
-                          <span key={i} className="px-2.5 py-0.5 rounded-full text-xs bg-indigo-950/60 border border-indigo-800/40 text-indigo-300">
+                          <span
+                            key={i}
+                            className="px-2.5 py-0.5 rounded-full text-xs bg-indigo-950/60 border border-indigo-800/40 text-indigo-300"
+                          >
                             #{kw}
                           </span>
                         ))}
@@ -453,7 +495,11 @@ export default function App() {
                       onClick={copyJson}
                       className="absolute top-8 right-8 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
                       <span>{copied ? 'Skopiowano' : 'Kopiuj'}</span>
                     </button>
                     <pre className="p-4 rounded-2xl bg-slate-950 border border-slate-850 text-slate-300 text-xs overflow-x-auto max-h-[500px] leading-relaxed font-mono">
@@ -461,12 +507,10 @@ export default function App() {
                     </pre>
                   </div>
                 )}
-
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
       </main>
     </div>
   );

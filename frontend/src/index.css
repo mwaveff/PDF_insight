@@ -1,26 +1,45 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @keyframes floatOrb1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(120px, 80px) scale(1.2); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(120px, 80px) scale(1.2);
+  }
 }
 
 @keyframes floatOrb2 {
-  0%, 100% { transform: translate(0, 0) scale(1.1); }
-  50% { transform: translate(-100px, -60px) scale(0.9); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(-100px, -60px) scale(0.9);
+  }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 0.75; }
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
 }
 
 .orb-1 {
-  animation: floatOrb1 16s ease-in-out infinite, pulseGlow 8s ease-in-out infinite;
+  animation:
+    floatOrb1 16s ease-in-out infinite,
+    pulseGlow 8s ease-in-out infinite;
 }
 
 .orb-2 {
-  animation: floatOrb2 20s ease-in-out infinite, pulseGlow 10s ease-in-out infinite;
+  animation:
+    floatOrb2 20s ease-in-out infinite,
+    pulseGlow 10s ease-in-out infinite;
 }
 
 /* Анімована сітка */

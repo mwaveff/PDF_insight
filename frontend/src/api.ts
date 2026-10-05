@@ -1,7 +1,6 @@
 import { InsightSchema, type InsightData } from './types/schema';
 
-const API_URL =
-  import.meta.env.VITE_API_URL ?? 'https://pdf-insight-7num.onrender.com/api/analyze';
+const API_URL = import.meta.env.VITE_API_URL ?? 'https://pdf-insight-7num.onrender.com/api/analyze';
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
