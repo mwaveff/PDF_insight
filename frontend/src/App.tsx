@@ -162,7 +162,7 @@ export default function App() {
           <input
             type="file"
             accept=".pdf,application/pdf"
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            className="absolute inset-0 z-20 opacity-0 cursor-pointer w-full h-full"
             onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
           />
 
