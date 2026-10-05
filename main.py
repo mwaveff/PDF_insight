@@ -32,7 +32,7 @@ ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://mwaveff.github.io")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 CANDIDATE_MODELS = [
     m.strip()
-    for m in os.getenv("GEMINI_MODELS", "gemini-3.5-flash,gemini-3.1-pro-preview").split(",")
+    for m in os.getenv("GEMINI_MODELS", "gemini-3.5-flash,gemini-3.5-flash-lite").split(",")
     if m.strip()
 ]
 RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "10"))
