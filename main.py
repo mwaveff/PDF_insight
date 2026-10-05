@@ -168,7 +168,6 @@ DATA RULES:
 
 
 def extract_text(data: bytes) -> tuple[str, int]:
-    """Return (text layer, page count). Raises HTTPException for unusable PDFs."""
     if not data.startswith(b"%PDF-"):
         raise HTTPException(status_code=400, detail="Plik nie jest prawidłowym dokumentem PDF.")
     try:
@@ -223,11 +222,11 @@ def analyze_text(text: str) -> ModelOutput:
             except genai_errors.APIError as e:
                 last_error = e
                 if e.code == 404:
-                    break  # model unavailable: go to the next one
+                    break
                 if e.code not in (429, 500, 502, 503, 504):
-                    break  # auth/bad request: retrying will not help
+                    break
                 time.sleep(1.5)
-            except Exception as e:  # noqa: BLE001 - network and other SDK errors
+            except Exception as e:  # noqa: BLE001
                 last_error = e
                 time.sleep(1.5)
 

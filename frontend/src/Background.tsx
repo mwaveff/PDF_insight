@@ -13,7 +13,6 @@ export default function Background() {
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
 
-    // Mouse position state
     let mouseX = w / 2;
     let mouseY = h / 2;
 
@@ -30,7 +29,6 @@ export default function Background() {
     };
     window.addEventListener('mousemove', onMouseMove);
 
-    // Particle count scales with screen size
     const particleCount = Math.min(Math.floor((w * h) / 12000), 120);
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * w,
@@ -46,15 +44,13 @@ export default function Background() {
       t += 0.002;
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Deep dark background
       ctx.fillStyle = '#03040b';
       ctx.fillRect(0, 0, w, h);
 
-      // 2. Soft background glow (slowly rotating)
       const cx1 = w * 0.5 + Math.sin(t) * w * 0.25;
       const cy1 = h * 0.5 + Math.cos(t * 1.2) * h * 0.25;
       const g1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, w * 0.55);
-      g1.addColorStop(0, 'rgba(79, 70, 229, 0.12)'); // Indigo
+      g1.addColorStop(0, 'rgba(79, 70, 229, 0.12)');
       g1.addColorStop(1, 'rgba(3, 4, 11, 0)');
       ctx.fillStyle = g1;
       ctx.fillRect(0, 0, w, h);
@@ -62,47 +58,40 @@ export default function Background() {
       const cx2 = w * 0.5 + Math.cos(t * 0.8) * w * 0.25;
       const cy2 = h * 0.5 + Math.sin(t * 1.1) * h * 0.25;
       const g2 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, w * 0.45);
-      g2.addColorStop(0, 'rgba(14, 165, 233, 0.08)'); // Sky blue
+      g2.addColorStop(0, 'rgba(14, 165, 233, 0.08)');
       g2.addColorStop(1, 'rgba(3, 4, 11, 0)');
       ctx.fillStyle = g2;
       ctx.fillRect(0, 0, w, h);
 
-      // 3. Particle animation (neural network)
       ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
 
-        // Bounce off the screen edges
         if (p.x < 0 || p.x > w) p.vx *= -1;
         if (p.y < 0 || p.y > h) p.vy *= -1;
 
-        // Mouse cursor interaction
         const dxMouse = mouseX - p.x;
         const dyMouse = mouseY - p.y;
         const distMouse = Math.hypot(dxMouse, dyMouse);
 
         if (distMouse < 180) {
-          // Draw a line to the mouse
           ctx.beginPath();
           ctx.strokeStyle = `rgba(129, 140, 248, ${0.4 * (1 - distMouse / 180)})`;
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(mouseX, mouseY);
           ctx.stroke();
 
-          // Gently push particles away from the cursor (magnetic field effect)
           p.x -= dxMouse * 0.015;
           p.y -= dyMouse * 0.015;
         }
 
-        // Draw the particle (node)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(199, 210, 254, 0.8)';
         ctx.fill();
 
-        // Connect nearby particles
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dx = p.x - p2.x;

@@ -108,12 +108,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen text-slate-100 font-sans selection:bg-indigo-500 selection:text-white pb-24 overflow-x-hidden">
-      {/* Animated canvas background */}
       <Background />
 
-      {/* relative z-10 keeps the content above the background */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 space-y-10">
-        {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -140,7 +137,6 @@ export default function App() {
           </p>
         </motion.header>
 
-        {/* Upload Card */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,7 +157,6 @@ export default function App() {
               : 'border-slate-800/80 bg-slate-900/40 hover:border-indigo-500/40 hover:bg-slate-900/60 shadow-[0_8px_32px_rgba(0,0,0,0.36)]'
           }`}
         >
-          {/* Subtle hover glow inside card */}
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
           <input
@@ -186,7 +181,6 @@ export default function App() {
           </p>
         </motion.div>
 
-        {/* Selected File & Action Bar */}
         <AnimatePresence>
           {file && (
             <motion.div
@@ -232,7 +226,6 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Error Notification */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -259,7 +252,6 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Empty State */}
         {!file && !data && !loading && !error && (
           <div className="text-center text-sm text-slate-500 py-6" data-testid="empty-state">
             <FileText className="w-8 h-8 mx-auto mb-2 text-slate-600" />
@@ -270,7 +262,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Loading Progress State */}
         {loading && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -289,7 +280,6 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* Results Panel */}
         <AnimatePresence>
           {data && (
             <motion.div
@@ -298,9 +288,7 @@ export default function App() {
               transition={{ duration: 0.6 }}
               className="space-y-6"
             >
-              {/* Result Container */}
               <div className="rounded-3xl bg-slate-900/40 border border-slate-800/90 shadow-2xl backdrop-blur-md overflow-hidden">
-                {/* Panel Header & Navigation */}
                 <div className="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -321,7 +309,6 @@ export default function App() {
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {/* Switcher Tab */}
                     <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
                       <button
                         onClick={() => setActiveTab('visual')}
@@ -357,10 +344,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Content: Visual Cards */}
                 {activeTab === 'visual' && (
                   <div className="p-6 space-y-6">
-                    {/* Summary */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Podsumowanie dokumentu
@@ -370,7 +355,6 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* Key Points */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-indigo-400" /> Kluczowe ustalenia
@@ -388,9 +372,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Entities & Amounts Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Podmioty i osoby */}
                       <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-850 space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                           <Building2 className="w-3.5 h-3.5 text-indigo-400" /> Organizacje
@@ -431,7 +413,6 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Kwoty i Daty */}
                       <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-850 space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                           <Coins className="w-3.5 h-3.5 text-amber-400" /> Wartości finansowe
@@ -477,7 +458,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Keywords */}
                     <div>
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                         Słowa kluczowe
@@ -496,7 +476,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Content: JSON Code View */}
                 {activeTab === 'json' && (
                   <div className="p-6 relative">
                     <button
